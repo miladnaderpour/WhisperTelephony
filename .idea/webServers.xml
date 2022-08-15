@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="97e5b8e7-0bea-441b-9c5a-9bd5a97ce124" name="Whisper">
+        <fileTransfer accessType="SFTP" host="localhost" port="22" sshConfigId="2a85cb94-c848-41a2-b19d-a0c5e90ec74a" sshConfig="root@localhost:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

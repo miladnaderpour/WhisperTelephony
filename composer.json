@@ -1,0 +1,10 @@
+{
+    "autoload": {
+        "classmap": ["Model","APP","Agi","Database"]
+    },
+    "require": {
+        "guzzlehttp/guzzle": "5.3",
+        "monolog/monolog": "1.25",
+      "ext-mysqli": "*"
+    }
+}
