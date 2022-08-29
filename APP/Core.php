@@ -29,7 +29,6 @@ class Core
     /**
      * @var
      */
-    private $_Program;
     public $Engine, $Agi, $Db, $Api;
     private $_Pid, $_Cid, $_Uid, $_Ctype, $_Chan, $_CallId, $_ani;
     private $_Config, $_logger, $_Agi, $_DBEng;
@@ -48,7 +47,7 @@ class Core
         $this->_Program = $config['Program']['ID'];
         $this->_logger = new Logger('Core');
         //$this->log_stream = new StreamHandler(__DIR__.'/core.log', Logger::DEBUG);
-        $this->log_stream = new StreamHandler($config['Log']['LogFile'], Logger::DEBUG);
+        $this->log_stream = new StreamHandler($config['Log']['LogFile'], $config['Log']['Level']);
         $this->_logger->pushHandler($this->log_stream);
     }
 

@@ -126,7 +126,10 @@ class DBEngine{
                         FROM
                             Menus
                             LEFT JOIN MenuItems ON Menus.Id = MenuItems.MenuId
-                            INNER JOIN ItemType ON MenuItems.ItemType = ItemType.Id ;";
+                            INNER JOIN ItemType ON MenuItems.ItemType = ItemType.Id 
+                        ORDER BY
+                            Menus.Id, 
+                            MenuItems.`Index`;";
 
 			$qres=$this->_Con->query($qry);
             $this->_logger->debug("Query Successful !: ".$qres->num_rows . " Item",["GetMenu"]);
@@ -151,12 +154,17 @@ class DBEngine{
     private function CreateMenuItems($qres)
     {
         $this->_logger->debug("Items Loaded Successfully !",["CreateMenu"]);
+        $format_menuItem = "Item:%-4s  Type(%-2s)%-10s %5s %-25s  %-2s";
         $Menu= new Menu();
         while($row = $qres->fetch_assoc())
         {
             $MenuItem = new MenuItem($row["ItemId"],$row["ItemTypeId"],$row["ItemIndex"],$row["ItemCaption"],
                 $row["SoundFile"],$row["Options"],$row["Output"],$row["Data"]);
             $MenuItem->MenuId=$row["Id"];
+
+            $this->_logger->debug(sprintf($format_menuItem,$row["ItemId"],$row["ItemTypeId"],$row["ItemType"],
+                                                           $row["ItemIndex"],$row["ItemCaption"],$row["Id"]));
+
             $Menu->AddItem($row["Id"],$row["Caption"],$MenuItem);
             $this->_logger->debug($row["Id"].":".$row["Caption"] ." added to menu ".$row["Id"],["CreateMenu"]);
         }
@@ -193,98 +201,13 @@ class DBEngine{
     private function CreateMenuValues($qres,$Menu)
     {
         $this->_logger->debug("Values Loaded Successfully !",["CreateMenuValues"]);
+        $format_menuValue = "%5s  key:%-10s  value:%-10s  %-25s";
         while($row = $qres->fetch_assoc())
         {
             $MenuValue = new MenuValue($row["Id"],$row["MenuId"],$row["Key"],$row["Value"],$row["Description"]);
             $Menu->AddValue($row["MenuId"],$MenuValue);
-            $this->_logger->debug($row["Id"].":".$row["Description"] ." added to menu ".$row["MenuId"],["CreateMenuValues"]);
+            $this->_logger->debug(sprintf($format_menuValue,$row["MenuId"],$row["Key"],$row["Value"],$row["Description"]));
         }
         return $Menu;
     }
-
-	public function AddNewResult($CallId,$ItemId,$Result,$StatusId)
-	{
-
-		$this->_Logger->Debug($this->_ChannelName,"AddNewResult","Call ID:".$CallId,"Item:".$ItemId." Result:".$Result);
-
-		if($Result=='')
-			$res='NULL';
-		else
-			($res="'".$Result."'");
-
-		$qury = "INSERT INTO Results (SessionId,MenuItemId,Result,StatusId) VALUES (".$CallId.",".$ItemId.",".$res.",".$StatusId.");";
-
-		$QResult = new OperationResult();
-
-		if($this->_DBInited)
-		{
-			$q=$this->_Con->query($qury);
-
-			if ($q==1) {
-
-				$last_id = $this->_Con->insert_id;
-				$this->_Logger->LOG($this->_ChannelName,3,"Item ". $ItemId . " Result Add By Value:".$res,"AddNewResult","$last_id");
-				$QResult->_Result=$last_id;
-				$QResult->_Error=false;
-				$QResult->_StatusCode=1;
-			}
-			else
-			{
-				$this->OnError("Result Not Added ","AddNewResult","DB Error");
-				$QResult->_Error=true;
-				$QResult->_StatusCode=-1;
-				$QResult->_MSG="Add NewResult Failed : DB Error";
-			}
-		}
-		else
-		{
-
-			$this->OnError("Result Not Added ","AddNewResult","DB Initiation Error");
-			$QResult->_Error=true;
-			$QResult->_StatusCode=-2;
-			$QResult->_MSG="Add NewResult Failed : DB Initiation Error!";
-		}
-
-		return $Result;
-
-	}
-
-	private function ChangeCallState($State)
-	{
-
-		$this->_DBEng->ChangeActiveCallState($this->_CallId,$this->_ChannelName.":".$State);
-		$this->NewCallDetail($State);
-
-
-	}
-
-	private function OnTimeOut($PlayBack,$Context,$SubUnitId,$Extra="",$MSG="")
-	{
-		if ($Extra=="")
-		{
-			$Extra="OnTimeOut";
-			$CallMessage=$Context . "TimeOut";
-			$MSG=$Context . "TimeOut";
-		}
-		else
-		{
-			$CallMessage = $MSG;
-		}
-
-		$this->_Logger->LOG($this->_ChannelName,6,"I) $MSG.",$Context,$Extra);
-		$this->_Logger->LOG($this->_ChannelName,6,"II) Playback ".$PlayBack."!",$Context,$Extra);
-		$this->_DBEng->AddCallDetail($this->_CallId,$this->_ProgramId,$SubUnitId,$CallMessage,$Extra,"",-1);
-		$this->_Agi->exec('playback',$PlayBack);
-	}
-
-	private function ReturnResult($Data,$Code,$Error=false,$Message="",$TimeOut=false)
-	{
-		$Result=new OperationResult();
-		$Result->_Error=$Error;
-		$Result->_Result=$Data;
-		$Result->_StatusCode=$Code;
-		$Result->_MSG=$Message;
-		$Result->_TimeOut=$TimeOut;
-		return $Result;
-	}
 }

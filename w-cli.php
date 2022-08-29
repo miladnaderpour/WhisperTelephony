@@ -4,7 +4,6 @@
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Whisper\App\Core;
-use Whisper\App\RTApp;
 use Whisper\Database\DBEngine;
 use Whisper\WebApiClient\WhisperWebApiClient;
 
@@ -25,7 +24,7 @@ function getConfig()
     $config['Program']['ID'] = '2';
 
     $config['Log']['LogFile'] = "/var/log/Agi/IVRApp.log";
-    $config['Log']['Level'] = 3;
+    $config['Log']['Level'] = Logger::NOTICE;
     return $config;
 }
 
@@ -40,11 +39,6 @@ function runAgi($config)
     }
 }
 
-function runInit(array $config)
-{
-    $App = new RTApp();
-    $App->InitApp($config);
-}
 
 /**
  * @throws Exception
@@ -82,7 +76,7 @@ function runTestApi(array $config, $func,$params=[])
             var_dump($Api->Reservation($params[0],$params[1],$params[2],$params[3],$params[4],$params[5]));
 
     }
-
+ return true;
 }
 
 function printClinicStatus($result)
@@ -136,7 +130,7 @@ function runTestDb(array $config, $func,$params=[])
             //var_dump($r);
             break;
     }
-
+    return true;
 }
 
 function printAppConfigs($application)
@@ -255,9 +249,6 @@ function run($argc, $argv)
                 break;
             case 'core':
                 runTestCore($config,$argv[2],array_slice($argv,3));
-                break;
-            case 'init':
-                runInit($config);
                 break;
         }
     }

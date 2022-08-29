@@ -69,9 +69,20 @@ class STEngine
         return OperationResult::ReturnErrorResult();
     }
 
+    private function PrintMenu($menu)
+    {
+        $format_menuValue = "%5s  key:%-4s value:%-4s %-25s";
+        foreach ($menu["Values"] as $value)
+        {
+            $this->_logger->debug(sprintf($format_menuValue,$value->MenuId,$value->Key,$value->Value,$value->Description),
+                ["PrintMenu"]);
+        }
+    }
+
     private function Program($MenuId)
     {
         $p = $this->GetMenu($MenuId);
+        $this->PrintMenu($this->Menu->Menu[$MenuId]);
         if (!$p->_Error)
             $this->ExcProgram($this->Menu->Menu[$MenuId]);
     }
@@ -103,6 +114,7 @@ class STEngine
                 if (!$new->_Error) {
                     $this->_logger->notice("program: " . $this->_ARResults['Next'] . " loaded", ["ExcProgram"]);
                     $this->CurrentMenu = $new->_Result;
+                    $this->PrintMenu($this->CurrentMenu);
                     $this->_ARResults['Jump'] = 0;
                 } else {
                     $Exit = true;
